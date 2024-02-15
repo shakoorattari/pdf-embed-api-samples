@@ -16,6 +16,7 @@ import { ViewSDKClient } from '../view-sdk.service';
     templateUrl: './viewer-customization.component.html'
 })
 export class ViewerCustomizationComponent implements AfterViewInit {
+    previewFilePromise: any;
     /* Control the viewer customization.
     * It lists down all supported variables with default values.
     **/
@@ -41,7 +42,9 @@ export class ViewerCustomizationComponent implements AfterViewInit {
         TWO_COLUMN displays two pages side-by-side in the current view.
         TWO_COLUMN_FIT_PAGE displays two pages side-by-side where the pages are zoomed to page level.
         Note that end users can toggle the view mode on the right hand panel. */
-        defaultViewMode: ''
+        defaultViewMode: '',
+        enableAnnotationAPIs: true,
+
     };
 
     constructor(private viewSDKClient: ViewSDKClient) { }
@@ -49,7 +52,141 @@ export class ViewerCustomizationComponent implements AfterViewInit {
     ngAfterViewInit() {
         this.viewSDKClient.ready().then(() => {
             /* Invoke file preview */
-            this.viewSDKClient.previewFile('pdf-div', this.viewerConfig);
+            this.previewFilePromise = this.viewSDKClient.previewFile('pdf-div', this.viewerConfig);
+            this.viewSDKClient.registerSaveApiHandler();
+            this.viewSDKClient.registerUserProfileHandler();
+
+
+            let annots = [
+                {
+                    "@context": [
+                        "https://www.w3.org/ns/anno.jsonld",
+                        "https://comments.acrobat.com/ns/anno.jsonld"
+                    ],
+                    "id": "1592abc6-f7e4-83a1-83h4-c979ab99999",
+                    "type": "Annotation",
+                    "motivation": "commenting",
+                    "bodyValue": "rqw qwerqw qwer",
+                    "target": {
+                        "source": "6d07d124-ac85-43b3-a867-36930f502ac6",
+                        "selector": {
+                            "node": {
+                                "index": 0
+                            },
+                            "opacity": 0.4,
+                            "subtype": "note",
+                            "boundingBox": [
+                                172.41977157372907,
+                                371.4826397194986,
+                                189.57596775021952,
+                                388.6388358959891
+                            ],
+                            "strokeColor": "#F8D147",
+                            "type": "AdobeAnnoSelector"
+                        }
+                    },
+                    "creator": {
+                        "id": "shakoor.hussain@sdd.shj.ae",
+                        "name": "Shakoor Hussain Attari",
+                        "type": "Person"
+                    },
+                    "created": "2024-02-15T09:37:15Z",
+                    "modified": "2024-02-15T09:40:13Z"
+                },
+                {
+                    "@context": [
+                        "https://www.w3.org/ns/anno.jsonld",
+                        "https://comments.acrobat.com/ns/anno.jsonld"
+                    ],
+                    "id": "9b8f8445-f7f9-8da6-85hb-6b5afa8cbaa",
+                    "type": "Annotation",
+                    "motivation": "commenting",
+                    "bodyValue": "page comments by shakoor",
+                    "target": {
+                        "source": "6d07d124-ac85-43b3-a867-36930f502ac6",
+                        "selector": {
+                            "node": {
+                                "index": 2
+                            },
+                            "opacity": 0.4,
+                            "subtype": "note",
+                            "boundingBox": [
+                                179.28225004432522,
+                                213.64563489578643,
+                                196.43844622081568,
+                                230.80183107227688
+                            ],
+                            "strokeColor": "#F8D147",
+                            "type": "AdobeAnnoSelector"
+                        }
+                    },
+                    "creator": {
+                        "id": "shakoor.hussain@sdd.shj.ae",
+                        "name": "Shakoor Hussain Attari",
+                        "type": "Person"
+                    },
+                    "created": "2024-02-15T09:40:29Z",
+                    "modified": "2024-02-15T09:40:35Z"
+                },
+                {
+                    "@context": [
+                        "https://www.w3.org/ns/anno.jsonld",
+                        "https://comments.acrobat.com/ns/anno.jsonld"
+                    ],
+                    "id": "04a4a33d-200f-8ef8-e8h5-eb3bf898aa8",
+                    "type": "Annotation",
+                    "motivation": "replying",
+                    "bodyValue": "moved to prime priciing",
+                    "target": {
+                        "source": "9b8f8445-f7f9-8da6-85hb-6b5afa8cbaa"
+                    },
+                    "creator": {
+                        "id": "shakoor.hussain@sdd.shj.ae",
+                        "name": "Shakoor Hussain Attari",
+                        "type": "Person"
+                    },
+                    "created": "2024-02-15T09:40:44Z",
+                    "modified": "2024-02-15T09:40:44Z"
+                }
+            ];
+
+
+            // setting comments panel config after preview init
+            // annotationManager.setConfig({ showCommentsPanel: true });
+
+            // AdobeViewer.executeCommand('TOGGLE_COMMENTING', true);
+
+
+            this.previewFilePromise.then(adobeViewer => {
+                adobeViewer.getAnnotationManager().then(annotationManager => {
+                    annotationManager.addAnnotations(annots)
+                        .then((annots) => {
+                            console.log("Success")
+                            console.log(annots)
+                        })
+                        .catch(error => console.log(error));
+                });
+            });
+
+        });
+    }
+
+    onCommentExport() {
+        const filter = {
+            // annotationIds: [Annotation_ID_1, Annotation_ID_2, ...];
+            // OR,
+            // pageRange: {startPage: <Page_Number>, endPage: <Page_Number>};
+        }
+
+        this.previewFilePromise.then(adobeViewer => {
+            adobeViewer.getAnnotationManager().then(annotationManager => {
+                annotationManager.getAnnotations(filter)
+                    .then((annots) => {
+                        console.log("Success")
+                        console.log(annots)
+                    })
+                    .catch(error => console.log(error));
+            });
         });
     }
 }

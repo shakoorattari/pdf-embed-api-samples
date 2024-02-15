@@ -24,7 +24,7 @@ export class PDFAnnotationToolsComponent implements AfterViewInit {
             this.viewSDKClient.previewFile('pdf-div', {
                 /* Control the viewer customization. */
                 showAnnotationTools: true,
-                enableFormFilling: true
+                enableFormFilling: false
             });
             /* Register Save API handler */
             this.viewSDKClient.registerSaveApiHandler();

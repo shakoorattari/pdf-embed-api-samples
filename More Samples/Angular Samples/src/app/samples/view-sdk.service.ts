@@ -98,8 +98,19 @@ export class ViewSDKClient {
     }
 
     registerSaveApiHandler() {
+        console.log('shakoor registering save api handler');
         /* Define Save API Handler */
         const saveApiHandler = (metaData: any, content: any, options: any) => {
+            console.log('shakoor save');
+
+            const url = window.URL.createObjectURL(new Blob([new Uint8Array(content).buffer]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'yourcoolpdf.pdf');
+            document.body.appendChild(link);
+            link.click();
+
+            console.log(content);
             console.log(metaData, content, options);
             return new Promise((resolve) => {
                 /* Dummy implementation of Save API, replace with your business logic */
@@ -111,6 +122,8 @@ export class ViewSDKClient {
                         },
                     };
                     resolve(response);
+                    console.log('shakoor save');
+                    console.log(response);
                 }, 2000);
             });
         };
@@ -123,6 +136,51 @@ export class ViewSDKClient {
     }
 
     registerEventsHandler() {
+        /* Register the callback to receive the events */
+        this.adobeDCView.registerCallback(
+            /* Type of call back */
+            window.AdobeDC.View.Enum.CallbackType.EVENT_LISTENER,
+            /* call back function */
+            (event: any) => {
+                console.log(event);
+            },
+            /* options to control the callback execution */
+            {
+                /* Enable PDF analytics events on user interaction. */
+                enablePDFAnalytics: true,
+            }
+        );
+    }
+
+    
+    registerUserProfileHandler() {
+        const profile = {
+            userProfile: {
+                name: 'Muhammad Adnan Khan',
+                firstName: 'Adnan',
+                lastName: 'Khan',
+                email: 'muhammada.khan@sdd.shj.ae'
+            }
+            // userProfile: {
+            //     name: 'Shakoor Hussain Attari',
+            //     firstName: 'Shakoor',
+            //     lastName: 'Attari',
+            //     email: 'shakoor.hussain@sdd.shj.ae'
+            // }
+        };
+
+        this.adobeDCView.registerCallback(
+            window.AdobeDC.View.Enum.CallbackType.GET_USER_PROFILE_API,
+            () => {
+                return new Promise((resolve, reject) => {
+                    resolve({
+                        code: window.AdobeDC.View.Enum.ApiResponseCode.SUCCESS,
+                        data: profile
+                    });
+                });
+            },
+            {});
+
         /* Register the callback to receive the events */
         this.adobeDCView.registerCallback(
             /* Type of call back */
